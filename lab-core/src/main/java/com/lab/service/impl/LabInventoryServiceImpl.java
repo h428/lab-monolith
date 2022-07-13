@@ -15,7 +15,6 @@ import com.lab.common.component.MybatisPlusUtil;
 import com.lab.common.query.PageQuery;
 import com.lab.common.util.MyAssert;
 import com.lab.entity.Lab;
-import com.lab.entity.LabIn;
 import com.lab.entity.LabInventory;
 import com.lab.entity.LabItem;
 import com.lab.entity.LabShelf;
@@ -76,7 +75,7 @@ public class LabInventoryServiceImpl extends ServiceImpl<LabInventoryMapper, Lab
             .eq(labShelfId != null, LabInventory::getLabShelfId, labShelfId)
             .eq(labUserId != null, LabInventory::getLabUserId, labUserId);
 
-        Page<LabInventory> pageRes = super.baseMapper.selectPage(page, inventoryWrapper);
+        Page<LabInventory> pageRes = super.page(page, inventoryWrapper);
         return MybatisPlusUtil.pageConvert(pageRes, this.labInventoryConverter::entityToVo);
 
     }
@@ -129,7 +128,7 @@ public class LabInventoryServiceImpl extends ServiceImpl<LabInventoryMapper, Lab
             .labInId(tid.getLabInId())
             .capacityId(tid.getCapacityId())
             .build();
-        return super.baseMapper.selectOne(Wrappers.query(query));
+        return super.getOne(Wrappers.query(query));
     }
 
     @Deprecated
@@ -211,7 +210,7 @@ public class LabInventoryServiceImpl extends ServiceImpl<LabInventoryMapper, Lab
 
     boolean deleteByIdAndVersion(Long id, Integer version) {
         LabInventory del = LabInventory.builder().id(id).version(version).build();
-        return super.baseMapper.delete(Wrappers.query(del)) == 1;
+        return super.remove(Wrappers.query(del));
     }
 
     boolean existByLabShelfId(Long labShelfId) {

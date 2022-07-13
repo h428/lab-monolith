@@ -12,7 +12,8 @@ spring:
     host: localhost
 
 
-
+common:
+  ali-email-file: C:/data/lab/ali-email.properties
 
 MYSQL_HOST: localhost
 domain: http://localhost

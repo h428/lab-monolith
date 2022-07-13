@@ -1,25 +1,26 @@
 package com.lab.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lab.common.exception.ParamErrorException;
-import com.lab.entity.BaseUser;
-import com.lab.mapper.BaseUserMapper;
 import com.lab.business.bo.BaseUserBO;
 import com.lab.business.converter.BaseUserConverter;
+import com.lab.business.message.BaseUserMessage;
 import com.lab.business.ro.BaseUserLoginRO;
 import com.lab.business.ro.BaseUserRegisterRO;
+import com.lab.business.ro.BaseUserResetPasswordRO;
 import com.lab.business.ro.BaseUserUpdatePasswordRO;
 import com.lab.business.ro.BaseUserUpdateRO;
 import com.lab.business.vo.BaseUserVO;
+import com.lab.common.exception.ParamErrorException;
+import com.lab.common.util.MyAssert;
+import com.lab.entity.BaseUser;
+import com.lab.mapper.BaseUserMapper;
 import com.lab.service.BaseUserService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> implements BaseUserService {
 
-
-    @Autowired
-    private BaseUserMapper baseUserMapper;
 
     private final BaseUserConverter baseUserConverter = BaseUserConverter.INSTANCE;
 
@@ -40,18 +38,22 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
 
         // 转换为 baseUser 并生成对应的 salt 和 password
         BaseUser baseUser = this.baseUserConverter.registerRoToEntity(baseUserRegisterRO);
+        // 邮箱统一小写
+        baseUser.setEmail(baseUser.getEmail().toLowerCase());
+        // entity 转 bo
         BaseUserBO baseUserBo = this.baseUserConverter.entityToBo(baseUser);
-        // 生成密码
+        // 使用 bo 的业务逻辑生成密码
         baseUserBo.generateSaltAndPassword();
-        // 拷贝处理后的业务参数
-        BeanUtil.copyProperties(baseUserBo, baseUser);
+        // 拷贝 baseBo 生成的 salt 以及基于 salt 加密的 password
+        baseUser.setPassword(baseUserBo.getPassword());
+        baseUser.setSalt(baseUserBo.getSalt());
 
         // 设置其他参数
         Long now = System.currentTimeMillis();
         baseUser.setCreateTime(now);
         baseUser.setUpdateTime(now);
 
-        this.baseUserMapper.insert(baseUser);
+        super.save(baseUser);
     }
 
 
@@ -64,7 +66,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
 
         // 根据邮箱查询对象
         QueryWrapper<BaseUser> getByEmail = Wrappers.query(BaseUser.builder().email(email).build());
-        BaseUser baseUserByEmail = this.baseUserMapper.selectOne(getByEmail);
+        BaseUser baseUserByEmail = super.getOne(getByEmail);
 
         // 若邮箱未注册，直接返回 null 表示登录失败
         if (baseUserByEmail == null) {
@@ -88,7 +90,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
         Long id = baseUserUpdateRO.getId();
         Assert.notNull(id);
 
-        BaseUser baseUser = this.baseUserMapper.selectById(id);
+        BaseUser baseUser = super.getById(id);
         Assert.notNull(baseUser);
 
 
@@ -99,7 +101,7 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
             LambdaQueryWrapper<BaseUser> getByUserName = Wrappers.<BaseUser>lambdaQuery()
                 .eq(BaseUser::getUsername, username)
                 .ne(BaseUser::getId, id);
-            BaseUser byUsername = baseUserMapper.selectOne(getByUserName);
+            BaseUser byUsername = super.getOne(getByUserName);
             if (byUsername != null) {
                 throw new ParamErrorException("用户名已被占用");
             }
@@ -109,22 +111,16 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
         long now = System.currentTimeMillis();
         baseUser.setUpdateTime(now);
 
-        this.baseUserMapper.updateById(baseUser);
+        super.updateById(baseUser);
     }
 
     @Override
     public void updatePassword(BaseUserUpdatePasswordRO passwordDto) {
-        // 声明必须参数不为空
-        Assert.notNull(passwordDto.getId());
-        Assert.notEmpty(passwordDto.getOldPassword());
-        Assert.notEmpty(passwordDto.getPassword());
-        Assert.notEmpty(passwordDto.getConfirmPassword());
-
         // 校验密码符合业务条件
         passwordDto.checkPasswordBusinessValid();
 
         // 查询用户并验证旧密码
-        BaseUser baseUser = this.baseUserMapper.selectById(passwordDto.getId());
+        BaseUser baseUser = super.getById(passwordDto.getId());
         BaseUserBO baseUserBoForPasswordCheck = this.baseUserConverter.entityToBo(baseUser);
 
         if (!baseUserBoForPasswordCheck.passwordValid(passwordDto.getOldPassword())) {
@@ -132,35 +128,40 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
         }
 
         // 使用 Bo 生成新密码
-        BaseUserBO baseUserBoForUpdatePassword = this.baseUserConverter.updatePasswordDtoToBo(passwordDto);
-        baseUserBoForUpdatePassword.generateSaltAndPassword();
+        BaseUserBO baseUserBO = this.baseUserConverter.roToBo(passwordDto);
+        baseUserBO.generateSaltAndPassword();
 
-        // 更新密码到 entity
-        baseUser.setPassword(baseUserBoForUpdatePassword.getPassword());
-        baseUser.setSalt(baseUserBoForUpdatePassword.getSalt());
-        baseUser.setUpdateTime(System.currentTimeMillis());
+        // 更新密码
+        BaseUser update = BaseUser.builder()
+            .id(baseUser.getId())
+            .password(baseUserBO.getPassword())
+            .salt(baseUserBO.getSalt())
+            .updateTime(System.currentTimeMillis())
+            .build();
+        super.updateById(update);
     }
 
     @Override
-    public void resetPassword(BaseUserUpdatePasswordRO passwordDto) {
-        // 声明必须参数不为空
-        Assert.notNull(passwordDto.getId());
-        Assert.notEmpty(passwordDto.getPassword());
-        Assert.notEmpty(passwordDto.getConfirmPassword());
+    public void resetPassword(BaseUserResetPasswordRO passwordDto) {
 
-        // 校验密码符合业务条件
-        passwordDto.checkPasswordBusinessValid();
-
-        BaseUser baseUser = this.baseUserMapper.selectById(passwordDto.getId());
+        // 根据 email 查询 baseUser
+        BaseUser query = BaseUser.builder().email(passwordDto.getEmail()).build();
+        QueryWrapper<BaseUser> wrapper = Wrappers.query(query);
+        BaseUser baseUser = super.getOne(wrapper);
+        MyAssert.notNull(baseUser, BaseUserMessage.EMAIL_UNUSED);
 
         // 使用 Bo 生成新密码
-        BaseUserBO baseUserBoForUpdatePassword = this.baseUserConverter.updatePasswordDtoToBo(passwordDto);
-        baseUserBoForUpdatePassword.generateSaltAndPassword();
+        BaseUserBO baseUserBO = this.baseUserConverter.roToBo(passwordDto);
+        baseUserBO.generateSaltAndPassword();
 
-        // 更新密码到 entity
-        baseUser.setPassword(baseUserBoForUpdatePassword.getPassword());
-        baseUser.setSalt(baseUserBoForUpdatePassword.getSalt());
-        baseUser.setUpdateTime(System.currentTimeMillis());
+        // 更新密码
+        BaseUser update = BaseUser.builder()
+            .id(baseUser.getId())
+            .password(baseUserBO.getPassword())
+            .salt(baseUserBO.getSalt())
+            .updateTime(System.currentTimeMillis())
+            .build();
+        super.updateById(update);
     }
 
     @Override
@@ -170,12 +171,12 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, BaseUser> i
 
     @Override
     public boolean existByEmail(String email) {
-        return this.baseUserMapper.existByEmail(email);
+        return super.baseMapper.existByEmail(email);
     }
 
     @Override
     public boolean existByUsername(String username) {
-        return this.baseUserMapper.existByUsername(username);
+        return super.baseMapper.existByUsername(username);
     }
 
     @Override

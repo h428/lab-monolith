@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.lab.BaseTest;
 import com.lab.business.ro.BaseUserLoginRO;
 import com.lab.business.ro.BaseUserRegisterRO;
+import com.lab.business.ro.BaseUserResetPasswordRO;
 import com.lab.business.ro.BaseUserUpdatePasswordRO;
 import com.lab.business.ro.BaseUserUpdateRO;
 import com.lab.service.impl.BaseUserServiceImpl;
@@ -84,8 +85,8 @@ public class BaseUserServiceImplTest extends BaseTest {
     @Test
     public void resetPassword() {
         String password = "lyh" + RandomUtil.randomInt(1000);
-        BaseUserUpdatePasswordRO passwordDto = BaseUserUpdatePasswordRO.builder()
-            .id(1L)
+        BaseUserResetPasswordRO passwordDto = BaseUserResetPasswordRO.builder()
+            .email("lyh@lab.com")
             .password(password)
             .confirmPassword(password)
             .build();

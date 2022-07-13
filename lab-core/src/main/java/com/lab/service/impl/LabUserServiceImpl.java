@@ -112,7 +112,7 @@ public class LabUserServiceImpl extends ServiceImpl<LabUserMapper, LabUser> impl
     public void update(LabUserUpdateRO labUserUpdateRO) {
         LabUser labUser = this.labUserConvert.roToEntity(labUserUpdateRO);
         ClassUtil.setLabUserIdAndTime(labUser, labUserUpdateRO.getOpLabUserId());
-        super.baseMapper.updateById(labUser);
+        super.updateById(labUser);
 
     }
 
@@ -184,7 +184,7 @@ public class LabUserServiceImpl extends ServiceImpl<LabUserMapper, LabUser> impl
     @Override
     public List<LabUserVO> listByLabId(Long labId) {
         LabUser labUser = LabUser.builder().labId(labId).deleted(false).build();
-        List<LabUser> labUsers = super.baseMapper.selectList(Wrappers.query(labUser));
+        List<LabUser> labUsers = super.list(Wrappers.query(labUser));
         return this.labUserConvert.entityToVo(labUsers);
     }
 

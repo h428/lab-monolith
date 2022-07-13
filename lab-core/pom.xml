@@ -91,6 +91,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
+    <!--ali email 依赖-->
+    <dependency>
+      <groupId>com.aliyun</groupId>
+      <artifactId>dm20151123</artifactId>
+    </dependency>
 
     <!--test-->
     <dependency>

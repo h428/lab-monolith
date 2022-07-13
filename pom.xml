@@ -39,9 +39,11 @@
     <swagger.version>2.9.2</swagger.version>
     <jjwt.version>0.11.2</jjwt.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <lombok.version>1.18.16</lombok.version>
+    <!--1.8.20 以下版本和 1.8 之后的 jdk 整合有问题，会编译错误，故采用 1.8.20-->
+    <lombok.version>1.18.20</lombok.version>
     <mybatis-plus.version>3.5.1</mybatis-plus.version>
     <poi.version>4.1.2</poi.version>
+    <ali-email.version>1.0.2</ali-email.version>
   </properties>
 
   <dependencies>
@@ -141,6 +143,13 @@
       </dependency>
 
       <!--component-->
+
+      <!--ali email 依赖-->
+      <dependency>
+        <groupId>com.aliyun</groupId>
+        <artifactId>dm20151123</artifactId>
+        <version>${ali-email.version}</version>
+      </dependency>
 
       <!--FastDFS 客户端-->
       <dependency>

@@ -118,7 +118,7 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
 
     @Override
     public List<LabVO> listByIds(List<Long> idList) {
-        List<Lab> labs = super.baseMapper.selectBatchIds(idList);
+        List<Lab> labs = super.listByIds(idList);
         return this.labConverter.entityToVo(labs);
     }
 
@@ -132,7 +132,7 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
     @Override
     public Map<Long, LabEntryVO> findOwnLabEntryMap(Long baseUserId) {
         Lab queryByBelongUserId = Lab.builder().belongBaseUserId(baseUserId).build();
-        List<Lab> labList = super.baseMapper.selectList(Wrappers.query(queryByBelongUserId));
+        List<Lab> labList = super.list(Wrappers.query(queryByBelongUserId));
 
         // 将 list 转换为 map 并返回
         return labList.stream()

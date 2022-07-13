@@ -20,7 +20,7 @@ public class CheckController {
     private BaseUserService baseUserService;
 
     @GetMapping("email-exist/{email}")
-    public ResBean<Boolean> existByEmail(@PathVariable @Email(message = BaseUserMessage.EMAIL_MESSAGE) String email) {
+    public ResBean<Boolean> existByEmail(@PathVariable @Email(message = BaseUserMessage.EMAIL_INVALID) String email) {
         return ResBean.ok_200(this.baseUserService.existByEmail(email));
     }
 

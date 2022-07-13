@@ -74,14 +74,14 @@ public class LabItemServiceImpl extends ServiceImpl<LabItemMapper, LabItem> impl
 
     @Override
     public List<LabItemVO> listByIds(List<Long> idList) {
-        List<LabItem> items = super.baseMapper.selectBatchIds(idList);
+        List<LabItem> items = super.listByIds(idList);
         return this.labItemConverter.entityToVo(items);
     }
 
     @Override
     public List<LabItemVO> listByLabId(Long labId) {
         LabItem query = LabItem.builder().labId(labId).deleted(false).build();
-        List<LabItem> items = super.baseMapper.selectList(Wrappers.query(query));
+        List<LabItem> items = super.list(Wrappers.query(query));
         return this.labItemConverter.entityToVo(items);
     }
 

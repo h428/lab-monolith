@@ -1,7 +1,9 @@
 package com.lab.business.ro;
 
 import cn.hutool.core.util.StrUtil;
+import com.lab.business.message.BaseUserMessage;
 import com.lab.common.exception.ParamErrorException;
+import javax.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,10 +24,13 @@ public class BaseUserUpdatePasswordRO {
 
     private Long id;
 
+    @NotEmpty(message = BaseUserMessage.OLD_PASSWORD_NOT_BLANK)
     private String oldPassword;
 
+    @NotEmpty(message = BaseUserMessage.PASSWORD_NOT_BLANK)
     private String password;
 
+    @NotEmpty(message = BaseUserMessage.CONFIRM_PASSWORD_NOT_BLANK)
     private String confirmPassword;
 
     public void checkPasswordBusinessValid() {

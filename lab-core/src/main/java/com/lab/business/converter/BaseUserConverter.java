@@ -1,5 +1,6 @@
 package com.lab.business.converter;
 
+import com.lab.business.ro.BaseUserResetPasswordRO;
 import com.lab.entity.BaseUser;
 import com.lab.business.bo.BaseUserBO;
 import com.lab.business.ro.BaseUserRegisterRO;
@@ -23,6 +24,7 @@ public interface BaseUserConverter {
 
     List<BaseUserVO> entityToVo(List<BaseUser> entity);
 
-    BaseUserBO updatePasswordDtoToBo(BaseUserUpdatePasswordRO baseUserUpdatePasswordRO);
+    BaseUserBO roToBo(BaseUserUpdatePasswordRO ro);
+    BaseUserBO roToBo(BaseUserResetPasswordRO ro);
 
 }

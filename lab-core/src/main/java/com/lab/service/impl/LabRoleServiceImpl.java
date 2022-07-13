@@ -89,14 +89,14 @@ public class LabRoleServiceImpl extends ServiceImpl<LabRoleMapper, LabRole> impl
 
     @Override
     public List<LabRoleVO> listByIds(List<Long> idList) {
-        List<LabRole> roles = super.baseMapper.selectBatchIds(idList);
+        List<LabRole> roles = super.listByIds(idList);
         return this.labRoleConverter.entityToVo(roles);
     }
 
     @Override
     public List<LabRoleVO> listByLabId(Long labId) {
         LabRole labRole = LabRole.builder().labId(labId).build();
-        List<LabRole> labRoles = super.baseMapper.selectList(Wrappers.query(labRole));
+        List<LabRole> labRoles = super.list(Wrappers.query(labRole));
         return this.labRoleConverter.entityToVo(labRoles);
     }
 

@@ -91,21 +91,21 @@ public class LabShelfServiceImpl extends ServiceImpl<LabShelfMapper, LabShelf> i
 
     @Override
     public List<LabShelfVO> listByIds(List<Long> idList) {
-        List<LabShelf> items = super.baseMapper.selectBatchIds(idList);
+        List<LabShelf> items = super.listByIds(idList);
         return this.labShelfConverter.entityToVo(items);
     }
 
     @Override
     public List<LabShelfVO> listByLabUserId(Long labUserId) {
         LabShelf query = LabShelf.builder().belongLabUserId(labUserId).deleted(false).build();
-        List<LabShelf> labShelves = super.baseMapper.selectList(Wrappers.query(query));
+        List<LabShelf> labShelves = super.list(Wrappers.query(query));
         return this.labShelfConverter.entityToVo(labShelves);
     }
 
     @Override
     public List<LabShelfVO> listByLabId(Long labId) {
         LabShelf labShelf = LabShelf.builder().labId(labId).deleted(false).build();
-        List<LabShelf> labShelves = super.baseMapper.selectList(Wrappers.query(labShelf));
+        List<LabShelf> labShelves = super.list(Wrappers.query(labShelf));
         return this.labShelfConverter.entityToVo(labShelves);
     }
 
@@ -115,7 +115,7 @@ public class LabShelfServiceImpl extends ServiceImpl<LabShelfMapper, LabShelf> i
      * @return
      */
     boolean autoConfirm(Long labShelfId) {
-        LabShelf labShelf = super.baseMapper.selectById(labShelfId);
+        LabShelf labShelf = super.getById(labShelfId);
         return this.autoConfirm(labShelf);
     }
 

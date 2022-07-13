@@ -19,14 +19,14 @@ public class BaseUserLoginRO {
     /**
      * 电子邮箱
      */
-    @NotBlank(message = BaseUserMessage.EMAIL_NOT_BLANK_MESSAGE)
-    @Email(message = BaseUserMessage.EMAIL_MESSAGE)
+    @NotBlank(message = BaseUserMessage.EMAIL_NOT_BLANK)
+    @Email(message = BaseUserMessage.EMAIL_INVALID)
     private String email;
 
     /**
      * 密码
      */
-    @NotBlank(message = BaseUserMessage.PASSWORD_NOT_BLANK_MESSAGE)
+    @NotBlank(message = BaseUserMessage.PASSWORD_NOT_BLANK)
     private String password;
 
     /**

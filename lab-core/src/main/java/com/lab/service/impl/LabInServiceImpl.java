@@ -25,7 +25,7 @@ public class LabInServiceImpl extends ServiceImpl<LabInMapper, LabIn> implements
 
     @Override
     public List<LabInVO> listByIds(List<Long> idList) {
-        List<LabIn> labIns = super.baseMapper.selectBatchIds(idList);
+        List<LabIn> labIns = super.listByIds(idList);
         return this.labInConverter.entityToVo(labIns);
     }
 

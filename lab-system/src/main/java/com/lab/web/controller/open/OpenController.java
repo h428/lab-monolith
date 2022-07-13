@@ -1,20 +1,19 @@
 package com.lab.web.controller.open;
 
-import com.google.common.collect.Lists;
-import com.lab.common.component.TokenUtil;
-import com.lab.common.util.EntityUtil;
-import com.lab.entity.BaseUser;
-import com.lab.common.bean.PageBean;
-import com.lab.common.bean.ResBean;
 import com.lab.business.converter.BaseUserConverter;
+import com.lab.business.message.BaseUserMessage;
 import com.lab.business.ro.BaseUserLoginRO;
+import com.lab.business.ro.BaseUserRegisterRO;
+import com.lab.business.ro.BaseUserResetPasswordRO;
 import com.lab.business.vo.BaseUserVO;
 import com.lab.business.vo.LoginResultVo;
-import com.lab.service.impl.BaseUserServiceImpl;
-import java.util.List;
+import com.lab.common.bean.ResBean;
+import com.lab.common.component.RedisUtil;
+import com.lab.common.component.TokenUtil;
+import com.lab.common.exception.ParamErrorException;
+import com.lab.service.BaseUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenController {
 
     @Autowired
-    private BaseUserServiceImpl baseUserServiceImpl;
+    private BaseUserService baseUserService;
 
     private final BaseUserConverter baseUserConverter = BaseUserConverter.INSTANCE;
 
@@ -33,7 +32,7 @@ public class OpenController {
     @PostMapping("login")
     public ResBean<LoginResultVo> login(@RequestBody @Validated BaseUserLoginRO baseUserLoginRO) {
         // todo captcha check
-        BaseUserVO baseUser = this.baseUserServiceImpl.loginByEmail(baseUserLoginRO);
+        BaseUserVO baseUser = this.baseUserService.loginByEmail(baseUserLoginRO);
 
         if (baseUser == null) {
             return ResBean.badRequest_400("用户名或密码错误，登录失败");
@@ -49,32 +48,63 @@ public class OpenController {
     }
 
 
-    @GetMapping("testList")
-    public ResBean<List<BaseUser>> testList() {
+    @PostMapping("register")
+    public ResBean<Void> register(@Validated @RequestBody BaseUserRegisterRO baseUserRegisterRO) {
 
-        List<BaseUser> baseUsers = Lists.newArrayList();
-        for (int i = 0; i < 5; i++) {
-            BaseUser t = EntityUtil.generateRandomOne(BaseUser.class, i);
-            baseUsers.add(t);
-        }
+        // 业务校验参数
+        this.checkRegisterParam(baseUserRegisterRO);
 
-        return ResBean.ok_200(baseUsers);
+        this.baseUserService.register(baseUserRegisterRO);
+
+        return ResBean.ok_200();
     }
 
-    @GetMapping("testPage")
-    public ResBean<PageBean<BaseUser>> testPage() {
+    // 注册参数校验：涉及业务
+    private void checkRegisterParam(BaseUserRegisterRO baseUserRegisterRO) {
 
-        List<BaseUser> baseUsers = Lists.newArrayList();
-        for (int i = 0; i < 5; i++) {
-            BaseUser t = EntityUtil.generateRandomOne(BaseUser.class, i);
-            baseUsers.add(t);
+        baseUserRegisterRO.validatePassword();
+
+        String email = baseUserRegisterRO.getEmail();
+
+        // 校验验证码是否合法
+        String key = CaptchaController.REGISTER_CAPTCHA_PREFIX + email;
+        if (!baseUserRegisterRO.getCaptcha().equals(RedisUtil.get(key))) {
+            throw new ParamErrorException(BaseUserMessage.CAPTCHA_ERROR);
         }
 
-        PageBean<BaseUser> pageBean = PageBean.<BaseUser>builder().list(baseUsers).build();
+        // 校验邮箱是否已注册
+        if (this.baseUserService.existByEmail(email)) {
+            throw new ParamErrorException(BaseUserMessage.EMAIL_USED);
+        }
 
-        return ResBean.ok_200(pageBean);
+        // 校验用户名是否已存在
+        String username = baseUserRegisterRO.getUsername();
+        if (this.baseUserService.existByUsername(username)) {
+            throw new ParamErrorException(BaseUserMessage.USERNAME_USED);
+        }
     }
 
+    @PostMapping("reset-password")
+    public ResBean<Void> resetPassword(@RequestBody @Validated BaseUserResetPasswordRO baseUserResetPasswordRO) {
 
+        // 补充的校验
+        baseUserResetPasswordRO.validate();
+
+        // 校验验证码是否合法
+        String captchaKey = CaptchaController.RESET_PASSWORD_CAPTCHA_PREFIX + baseUserResetPasswordRO.getEmail();
+        String captcha = RedisUtil.get(captchaKey);
+
+        if (!baseUserResetPasswordRO.getCaptcha().equals(captcha)) {
+            throw new ParamErrorException(BaseUserMessage.CAPTCHA_ERROR);
+        }
+
+        // 重置密码
+        this.baseUserService.resetPassword(baseUserResetPasswordRO);
+
+        // 移除验证码
+        RedisUtil.remove(captchaKey);
+
+        return ResBean.ok_200();
+    }
 
 }

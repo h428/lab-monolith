@@ -26,7 +26,7 @@ public class BaseUserUpdateRO {
     /**
      * 用户名
      */
-    @Pattern(regexp = CommonRegexpPattern.USERNAME, message = BaseUserMessage.USERNAME_PATTERN_MESSAGE)
+    @Pattern(regexp = CommonRegexpPattern.USERNAME, message = BaseUserMessage.USERNAME_INVALID)
     private String username;
 
     private String avatar;

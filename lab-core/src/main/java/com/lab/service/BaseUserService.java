@@ -5,6 +5,7 @@ import com.lab.business.ro.BaseUserLoginRO;
 import com.lab.business.ro.BaseUserRegisterRO;
 import com.lab.business.ro.BaseUserUpdatePasswordRO;
 import com.lab.business.ro.BaseUserUpdateRO;
+import com.lab.business.ro.BaseUserResetPasswordRO;
 import com.lab.business.vo.BaseUserVO;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public interface BaseUserService {
 
     void updatePassword(BaseUserUpdatePasswordRO passwordDto);
 
-    void resetPassword(BaseUserUpdatePasswordRO passwordDto);
+    void resetPassword(BaseUserResetPasswordRO baseUserResetPasswordRO);
 
     BaseUserVO get(Long id);
 

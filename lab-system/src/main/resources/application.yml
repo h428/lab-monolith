@@ -28,3 +28,10 @@ server:
 logging:
   level:
     com.lab: debug
+
+---
+spring:
+  profiles: prod
+
+common:
+  ali-email-file: /lab/conf/ali-email.properties

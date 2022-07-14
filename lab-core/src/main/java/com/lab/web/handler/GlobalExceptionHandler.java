@@ -46,4 +46,11 @@ public class GlobalExceptionHandler {
         ConstraintViolation<?> constraintViolation = ex.getConstraintViolations().iterator().next();
         return ResBean.badRequest_400(constraintViolation.getMessage());
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResBean<?> handleBindException(Exception ex) {
+        //校验 除了 requestBody 注解方式的参数校验 对应的 bindingResult 为 BeanPropertyBindingResult
+        return ResBean.internal_server_error_500("处理发生异常");
+    }
 }

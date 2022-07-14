@@ -1,5 +1,6 @@
 package com.lab.common.component.email;
 
+import cn.hutool.core.util.StrUtil;
 import com.aliyun.dm20151123.Client;
 import com.aliyun.dm20151123.models.SingleSendMailRequest;
 import com.aliyun.tea.TeaException;
@@ -20,28 +21,44 @@ public class AliEmailSender implements EmailSender {
     @Value("${common.ali-email-file}")
     private String aliEmailFileName;
 
-    // 访问密钥 id
-    private String accessKeyId;
-
-    // 访问密钥
-    private String accessKeySecret;
-
     // 阿里控制台配置的发信地址，即发件源地址
     private String accountName;
-
-    // 原子模式复用 request 对象
-    private final SingleSendMailRequest request = new SingleSendMailRequest();
 
     @PostConstruct
     public void init() {
         // 根据 yml 文件中配置的文件地址，读取 ali-email.properties 配置
         Properties properties = PropertyUtil.load(aliEmailFileName);
-        // 读取 properties 以用于发送邮件
-        this.accessKeyId = properties.getProperty("accessKeyId");
-        this.accessKeySecret = properties.getProperty("accessKeySecret");
-        this.accountName = properties.getProperty("accountName");
+
+        if (properties == null) {
+            log.error(String.format("读取邮件配置文件 %s 失败，请检查 yml 文件中的 common.ali-email-file 配置", aliEmailFileName));
+            return;
+        }
+
+        // 读取 properties 创建客户端
+        // 访问密钥 id
+        String accessKeyId = properties.getProperty("accessKeyId");
+        if (StrUtil.isEmpty(accessKeyId)) {
+            log.error(String.format("%s 必须配置 accessKeyId 属性", aliEmailFileName));
+            return;
+        }
+
+        // 访问密钥
+        String accessKeySecret = properties.getProperty("accessKeySecret");
+        if (StrUtil.isEmpty(accessKeyId)) {
+            log.error(String.format("%s 必须配置 accessKeySecret 属性", aliEmailFileName));
+            return;
+        }
+
         // 构造 client 对象用于发送邮件
         this.client = createClient(accessKeyId, accessKeySecret);
+
+
+        // 读取 accountName，即发件源地址，发件时的必备参数
+        this.accountName = properties.getProperty("accountName");
+        if (StrUtil.isEmpty(this.accountName)) {
+            log.error(String.format("%s 必须配置 accountName 属性", aliEmailFileName));
+            return;
+        }
     }
 
     // 发送邮件的客户端对象

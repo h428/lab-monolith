@@ -17,7 +17,7 @@ public class PropertyUtil {
             // 获取key对应的 value 值
             return properties;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 

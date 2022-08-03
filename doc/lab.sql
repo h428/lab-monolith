@@ -11,7 +11,7 @@
  Target Server Version : 50730
  File Encoding         : 65001
 
- Date: 13/07/2022 08:55:30
+ Date: 18/07/2022 09:10:26
 */
 
 SET NAMES utf8mb4;
@@ -206,8 +206,8 @@ CREATE TABLE `lab_in`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `delete_time` bigint(20) NOT NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_hub_id_and_op_time`(`lab_id`, `op_time`) USING BTREE,
-  INDEX `idx_hub_item_id_and_op_time`(`lab_item_id`, `op_time`) USING BTREE
+  INDEX `idx_lab_id_and_op_time`(`lab_id`, `op_time`) USING BTREE,
+  INDEX `idx_lab_item_id_and_op_time`(`lab_item_id`, `op_time`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '入库' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -225,7 +225,12 @@ CREATE TABLE `lab_inventory`  (
   `lab_item_id` bigint(20) NOT NULL COMMENT '冗余列：物品 id',
   `lab_user_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '冗余列：实验室用户 id',
   `version` int(11) NOT NULL DEFAULT 0 COMMENT '乐观锁版本',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_real_id`(`lab_shelf_id`, `lab_in_id`, `capacity_id`) USING BTREE,
+  INDEX `idx_lab_id`(`lab_id`) USING BTREE,
+  INDEX `idx_lab_user_id`(`lab_user_id`) USING BTREE,
+  INDEX `idx_lab_item_id`(`lab_item_id`) USING BTREE,
+  INDEX `idx_lab_in_id`(`lab_in_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '仓库架子物品' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -367,9 +372,8 @@ CREATE TABLE `lab_user`  (
   `deleted` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否删除',
   `delete_time` bigint(20) NOT NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_hub_id`(`lab_id`) USING BTREE,
-  INDEX `idx_base_user_id`(`base_user_id`) USING BTREE,
-  INDEX `idx_hub_user_role_id`(`lab_role_id`) USING BTREE
+  INDEX `idx_lab_id`(`lab_id`) USING BTREE,
+  INDEX `idx_base_user_id`(`base_user_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '仓库可用用户' ROW_FORMAT = Dynamic;
 
 -- ----------------------------

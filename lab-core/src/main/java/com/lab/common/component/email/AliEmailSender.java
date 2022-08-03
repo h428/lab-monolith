@@ -6,7 +6,7 @@ import com.aliyun.dm20151123.models.SingleSendMailRequest;
 import com.aliyun.tea.TeaException;
 import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.teautil.models.RuntimeOptions;
-import com.lab.common.dto.EmailDTO;
+import com.lab.common.ro.EmailRO;
 import com.lab.common.util.PropertyUtil;
 import java.util.Properties;
 import javax.annotation.PostConstruct;
@@ -88,7 +88,7 @@ public class AliEmailSender implements EmailSender {
 
 
     @Override
-    public boolean sendEmail(EmailDTO emailDTO) {
+    public boolean sendEmail(EmailRO emailRO) {
 
         // options
         RuntimeOptions runtime = new RuntimeOptions();
@@ -99,11 +99,11 @@ public class AliEmailSender implements EmailSender {
             .setAddressType(1) // 1 表示是发信地址
             // 设置目标地址
             // 可以给多个收件人发送邮件，收件人之间用逗号分开，批量发信建议使用BatchSendMailRequest方式
-            .setToAddress(emailDTO.getToAddress())
-            .setSubject(emailDTO.getSubject())
+            .setToAddress(emailRO.getToAddress())
+            .setSubject(emailRO.getSubject())
             //如果采用byte[].toString的方式的话请确保最终转换成utf-8的格式再放入htmlbody和textbody，若编码不一致则会被当成垃圾邮件。
             //注意：文本邮件的大小限制为3M，过大的文本会导致连接超时或413错误
-            .setHtmlBody(emailDTO.getHtmlBody())
+            .setHtmlBody(emailRO.getHtmlBody())
             .setReplyToAddress(true);
 
         try {
@@ -133,13 +133,13 @@ public class AliEmailSender implements EmailSender {
         emailSender.init();
 
         // 测试发件
-        EmailDTO emailDTO = EmailDTO.builder()
+        EmailRO emailRO = EmailRO.builder()
             .toAddress("Lyinghao@126.com")
             .subject("注册 labmate 验证码")
             .htmlBody("您正在注册 Labmate，验证码为 333")
             .build();
 
-        System.out.println(emailSender.sendEmail(emailDTO));
+        System.out.println(emailSender.sendEmail(emailRO));
     }
 
 }

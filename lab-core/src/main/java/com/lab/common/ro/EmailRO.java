@@ -1,4 +1,4 @@
-package com.lab.common.dto;
+package com.lab.common.ro;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Builder
-public class EmailDTO {
+public class EmailRO {
 
     /**
      * 目标邮箱地址

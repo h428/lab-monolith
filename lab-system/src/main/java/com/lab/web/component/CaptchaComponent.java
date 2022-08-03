@@ -4,7 +4,7 @@ import com.lab.business.message.BaseUserMessage;
 import com.lab.common.bean.ResBean;
 import com.lab.common.component.RedisUtil;
 import com.lab.common.component.email.EmailSender;
-import com.lab.common.dto.EmailDTO;
+import com.lab.common.ro.EmailRO;
 import com.lab.common.exception.BusinessException;
 import com.lab.common.exception.ParamErrorException;
 import org.apache.commons.lang3.RandomUtils;
@@ -52,13 +52,13 @@ public class CaptchaComponent {
             + "，该验证码 5 分钟内有效。（该邮件为系统邮件，请不要回复该邮件）";
 
         // 发送邮件
-        EmailDTO emailDTO = EmailDTO.builder()
+        EmailRO emailRO = EmailRO.builder()
             .subject(subject)
             .toAddress(email)
             .htmlBody(htmlBody)
             .build();
 
-        if (!this.emailSender.sendEmail(emailDTO)) {
+        if (!this.emailSender.sendEmail(emailRO)) {
             throw new BusinessException(op + "验证码发送失败，请稍后重试");
         }
 

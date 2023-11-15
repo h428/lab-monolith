@@ -85,7 +85,6 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
 
     }
 
-
     /**
      * 根据 id 删除 Lab
      *
@@ -96,6 +95,7 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
         Lab lab = super.getById(id);
         lab.setDeleted(true);
         lab.setDeleteTime(System.currentTimeMillis());
+        super.updateById(lab);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
 
     @Override
     public Map<Long, LabEntryVO> findOwnLabEntryMap(Long baseUserId) {
-        Lab queryByBelongUserId = Lab.builder().belongBaseUserId(baseUserId).build();
+        Lab queryByBelongUserId = Lab.builder().belongBaseUserId(baseUserId).deleted(false).build();
         List<Lab> labList = super.list(Wrappers.query(queryByBelongUserId));
 
         // 将 list 转换为 map 并返回
@@ -154,10 +154,16 @@ public class LabServiceImpl extends ServiceImpl<LabMapper, Lab> implements LabSe
             }));
     }
 
+    private boolean labExists(Long labId) {
+        Lab lab = super.getById(labId);
+        return lab != null && !lab.getDeleted();
+    }
+
     @Override
     public Map<Long, LabEntryVO> findAddedInLabEntryMap(Long baseUserId) {
         List<LabUser> addedInList = this.labUserService.findAddedInList(baseUserId);
         return addedInList.stream()
+            .filter(labUser -> this.labExists(labUser.getLabId()))
             .collect(Collectors.toMap(LabUser::getLabId, labUser -> LabEntryVO.builder()
                 .labId(labUser.getLabId())
                 .labUserId(labUser.getId())

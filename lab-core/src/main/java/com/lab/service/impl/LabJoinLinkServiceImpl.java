@@ -64,7 +64,6 @@ public class LabJoinLinkServiceImpl extends ServiceImpl<LabJoinLinkMapper, LabJo
         return labJoinLinkVO;
     }
 
-    @Override
     public LabJoinLinkVO getByLink(String link) {
 
         LabJoinLink entity = getEntityByLink(link);
